@@ -1,0 +1,117 @@
+SELECT * From Project..[Shark Tank]
+
+-- total episodesm by using both max and count functions
+
+SELECT MAX(Ep_No) FROM Project..[Shark Tank]
+SELECT count(distinct Ep_No) FROM Project..[Shark Tank]
+
+-- Total No. of Pitches
+
+Select count(distinct brand) FROM Project..[Shark Tank]
+
+-- Pitches Converted and Total No. of pitches which received funding and the result can be seen in percentage as well.
+
+SELECT cast(SUM(a.Converted_not_converted)as float)/cast(count(*) as float) from(
+SELECT amount_invested_lakhs , case when amount_invested_lakhs>0 then 1 else 0 end as converted_not_converted from project..[Shark Tank]) a
+
+-- Total Male
+
+SELECT sum(male) Total_Male FROM Project..[Shark Tank]
+
+-- Total Female
+
+SELECT sum(female) Total_Female FROM Project..[Shark Tank]
+
+-- Gender Ratio
+
+Select cast(sum(female) as float)/cast(sum(male) as float) Gender_Ratio from Project..[Shark Tank]
+
+-- Total Invested amount
+
+SELECT sum(amount_invested_lakhs) from Project..[Shark Tank]
+
+--avg equity taken in percentage
+
+SELECT avg(a.Equity_Taken) FROM
+(SELECT * FROM Project..[Shark Tank] WHERE Equity_Taken>0) a
+
+--highest deal taken
+
+SELECT MAX(amount_invested_lakhs) from Project..[Shark Tank]
+
+--highest equity taken
+
+SELECT max(Equity_Taken) FROM Project..[Shark Tank]
+
+ -- startups having atleas 1 woman
+
+SELECT SUM(a.female_count) FROM (
+SELECT female, case when female>0 then 1 else 0 end as female_count FROM Project..[Shark Tank]) a
+
+--pitches converted having atleast one woman
+
+SELECT * From Project..[Shark Tank]
+
+SELECT sum(b.female_count) from(
+
+SELECT case WHEN a.Female>0 then 1 else 0 end as female_count, a.*FROM(
+(SELECT * FROM Project..[Shark Tank] WHERE Deal!='No Deal')) a) b
+
+--avg team members
+
+select avg(team_members) from Project..[Shark Tank]
+
+-- amount invested per deal
+
+select avg(Amount_invested_lakhs) amount_invested_per_deal FROM
+(Select * From Project..[Shark Tank] where deal!='No Deal') a
+
+-- Average age group of Contestants
+
+Select avg_age,Count(avg_age) cnt from Project..[Shark Tank] group by avg_age order by cnt DESC
+
+-- Location group of Contestants
+
+Select Location,Count([Location]) cnt from Project..[Shark Tank] group by [Location] order by cnt DESC
+
+--Sector Group of Contestants
+
+Select Sector,Count(Sector) cnt from Project..[Shark Tank] group by Sector order by cnt DESC
+
+-- Partner Deals
+
+Select Partners, Count(Partners) cnt From Project..[Shark Tank] where partners != '-' group by Partners order by cnt DESC
+
+-- Making the Matrix
+
+SELECT 'Ashneer' as Keyy, COUNT(ashneer_amount_invested) from Project..[Shark Tank] where Ashneer_Amount_Invested is not NULL
+
+SELECT 'Ashneer' as Keyy, COUNT(ashneer_amount_invested) from Project..[Shark Tank] where Ashneer_Amount_Invested is not NULL and Ashneer_Amount_Invested != 0
+
+SELECT 'Ashneer' as Keyy, SUM(C.Ashneer_Amount_Invested), AVG(C.Ashneer_Equity_Taken)
+From (Select * From Project..[Shark Tank] where Ashneer_Equity_Taken !=0 and Ashneer_Equity_Taken is not null) c
+
+Select m.Keyy,m.total_deals_present,m.total_deals,n.total_amount_invested,n.avg_equity_taken FROM
+(Select a.keyy,a.total_deals_present,b.total_deals from(
+SELECT 'Ashneer' as Keyy, COUNT(ashneer_amount_invested) total_deals_present from Project..[Shark Tank] where Ashneer_Amount_Invested is not NULL) a
+
+inner join (
+SELECT 'Ashneer' as Keyy, COUNT(ashneer_amount_invested) Total_deals from Project..[Shark Tank] where Ashneer_Amount_Invested is not NULL and Ashneer_Amount_Invested != 0) b
+
+on a.keyy=b.keyy) m
+
+inner JOIN
+
+(SELECT 'Ashneer' as Keyy, SUM(C.Ashneer_Amount_Invested) total_amount_invested, AVG(C.Ashneer_Equity_Taken) avg_equity_taken
+From (Select * From Project..[Shark Tank] where Ashneer_Equity_Taken !=0 and Ashneer_Equity_Taken is not null) c) n 
+
+on m.keyy=n.Keyy
+
+--Which is the startup in which the highest amount has been invested in each domain/sector
+
+Select c.* from
+(SELECT brand,Sector,amount_invested_lakhs,rank() over(partition by sector order by amount_invested_lakhs desc) rank
+
+from project..[Shark Tank]) c 
+
+where c.rank=1
